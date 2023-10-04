@@ -46,6 +46,9 @@ devDependencies:
   nodemon:
     specifier: ^2.0.22
     version: 2.0.22
+  prettier:
+    specifier: ^3.0.3
+    version: 3.0.3
   vite:
     specifier: ^4.4.10
     version: 4.4.10(@types/node@18.18.3)
@@ -1349,6 +1352,12 @@ packages:
       nanoid: 3.3.6
       picocolors: 1.0.0
       source-map-js: 1.0.2
+    dev: true
+
+  /prettier@3.0.3:
+    resolution: {integrity: sha512-L/4pUDMxcNa8R/EthV08Zt42WBO4h1rarVtK0K+QJG0X187OLo7l699jWw0GKuwzkPQ//jMFA/8Xm6Fh3J/DAg==}
+    engines: {node: '>=14'}
+    hasBin: true
     dev: true
 
   /proxy-addr@2.0.7:
