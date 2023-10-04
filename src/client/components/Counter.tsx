@@ -10,7 +10,10 @@ export default function Counter() {
   }, [count]);
 
   return (
-    <button onClick={() => setCount((count) => count + 1)}>
+    <button
+      className='rounded-lg border border-transparent px-6 py-3 text-base font-medium bg-slate-100 cursor-pointer transition-colors duration-200 hover:border-blue-600 focus:outline-4 focus-visible:outline-4'
+      onClick={() => setCount((count) => count + 1)}
+    >
       count is {count}
     </button>
   );
