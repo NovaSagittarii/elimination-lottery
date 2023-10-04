@@ -1,11 +1,24 @@
 import './App.css';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { io } from "socket.io-client";
 
 import reactLogo from './assets/react.svg';
 
 function App() {
   const [count, setCount] = useState(0);
+  const [app, setApp] = useState(null as ReturnType<typeof io> | null);
+  useEffect(() => {
+    if (app == null) {
+      setApp(io());
+      console.log("connecting"); // i don't know why this runs twice, but it doesn't seem to break things
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!app) return;
+    app.emit('count', count);
+  }, [app, count]);
 
   return (
     <div className='App'>
