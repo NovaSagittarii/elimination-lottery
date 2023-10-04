@@ -15,7 +15,7 @@ io.on('connection', (socket) => {
   console.log('a user connected');
   socket.on('count', (data) => {
     console.log('count', socket.id, data);
-  })
+  });
 });
 
 server.listen(3000, () => {
