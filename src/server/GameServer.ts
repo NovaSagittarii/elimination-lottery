@@ -33,7 +33,13 @@ class GameServer extends SioServer {
       });
 
       socket.on('choice', (data: number) => {
-        room.setUserChoice(socket.id, data);
+        if (data >= 0) {
+          // todo: check user is participanting?
+          const prevChoice = room.getUser(socket.id)?.getChoice();
+          room.setUserChoice(socket.id, data);
+          // made their choice
+          if (prevChoice === -1) this.broadcastUndecided();
+        }
       });
 
       socket.on('disconnect', () => {
@@ -41,6 +47,9 @@ class GameServer extends SioServer {
         room.removeUser(socket.id);
       });
     });
+  }
+  private broadcastUndecided() {
+    this.io.emit('awaiting_for', this.room.getPendingChoiceCount());
   }
   public async enableAutostart(requiredPlayers: number = 1) {
     const { io, room } = this;
@@ -67,6 +76,7 @@ class GameServer extends SioServer {
 
     room.startRound();
     io.emit('new_question', room.getQuestion());
+    this.broadcastUndecided();
   }
 }
 

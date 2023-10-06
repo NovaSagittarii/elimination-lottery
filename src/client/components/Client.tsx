@@ -23,7 +23,7 @@ export default function Client() {
   }, [username]);
 
   return (
-    <div className='m-auto max-w-lg h-screen flex flex-col justify-center align-middle '>
+    <div className='m-auto p-10 max-w-lg h-screen flex flex-col justify-center align-middle '>
       {!username && (
         <>
           <InputText value={inputName} setValue={setInputName} />
@@ -32,27 +32,31 @@ export default function Client() {
           </Button>
         </>
       )}
-      {username && question ? (
-        <div>
-          <div className='flex flex-col gap-2'>
-            <span className='font-semibold text-lg text-slate-700 text-center'>{question.title}</span>
-            {
-              question.options.map((option, index) => (
-                <Button 
-                  variant='outlined' key={index}
+      {username ? (
+        question ? (
+          <div>
+            <div>{`waiting on ${state.undecidedRemaining} people`}</div>
+            <div className='flex flex-col gap-2'>
+              <span className='font-semibold text-lg text-slate-700 text-center'>
+                {question.title}
+              </span>
+              {question.options.map((option, index) => (
+                <Button
+                  variant='outlined'
+                  key={index}
                   onClick={() => {
                     app?.emit('choice', index);
                   }}
                 >
                   {option}
                 </Button>
-              ))
-            }
+              ))}
+            </div>
           </div>
-        </div>
-      ) : (
-        <div> awaiting question </div>
-      )}
+        ) : (
+          <div> awaiting question </div>
+        )
+      ) : null}
       <div
         className={
           'fixed left-0 bottom-0 w-full h-6 flex justify-center items-center text-[#0008] text-sm font-extrabold overflow-hidden transition-colors duration-300 ' +

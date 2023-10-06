@@ -11,7 +11,8 @@ export class Room {
   private usedNames: Set<string> = new Set();
   private users = new Map<string, LIB.User>();
   private candidates = new Map<string, LIB.User>();
-  private eliminated_candidates: EliminationRecord[] = [];
+  private eliminatedCandidates = new Map<string, LIB.User>();
+  private eliminationHistory: EliminationRecord[] = [];
   private questionSet: LIB.QuestionSet | null = null;
   private question: LIB.Question | null = null;
   private currentRound: number = 0;
@@ -24,7 +25,8 @@ export class Room {
   initialize() {
     this.currentRound = 0;
     this.candidates.clear();
-    this.eliminated_candidates = [];
+    this.eliminatedCandidates.clear();
+    this.eliminationHistory = [];
   }
   getUser(key: string) {
     return this.users.get(key);
@@ -73,7 +75,10 @@ export class Room {
     return this.question;
   }
   setUserChoice(key: string, choice: number) {
-    this.candidates.get(key)?.setChoice(choice);
+    // console.log('set uchoice', key, choice);
+    // console.log(this.candidates);
+    this.users.get(key)?.setChoice(choice);
+    // console.log(this.candidates);
   }
   endRound() {
     const passed_candidates: typeof this.candidates = new Map();
@@ -114,7 +119,8 @@ export class Room {
       if (user.getChoice() !== -1 && user.getChoice() !== worst_choice) {
         passed_candidates.set(key, user);
       } else {
-        this.eliminated_candidates.push({
+        this.eliminatedCandidates.set(key, user);
+        this.eliminationHistory.push({
           username: user.getName(),
           time: this.currentRound,
         });
@@ -128,7 +134,14 @@ export class Room {
     return [...this.candidates.values()].map((x) => x.getName());
   }
   public getEliminationLog() {
-    return this.eliminated_candidates;
+    return this.eliminationHistory;
+  }
+  public getPendingChoiceCount(): number {
+    // console.log([...this.users.values()]);
+    return [
+      ...this.candidates.values(),
+      ...this.eliminatedCandidates.values(),
+    ].filter((x) => x.getChoice() === -1).length;
   }
   public getCandidateEntries() {
     return this.candidates.entries();

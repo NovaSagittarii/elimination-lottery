@@ -16,6 +16,8 @@ export type AppState = {
   eliminations: EliminationRecord[];
   status: ClientStatus;
   question: Question | null;
+  totalParticipants: number;
+  undecidedRemaining: number;
 };
 export const InitialAppState: AppState = {
   username: '',
@@ -23,6 +25,8 @@ export const InitialAppState: AppState = {
   eliminations: [],
   status: 'spectator',
   question: null,
+  totalParticipants: -1,
+  undecidedRemaining: -1,
 };
 export const AppStateContext = createContext<AppState>(InitialAppState);
 
@@ -50,6 +54,7 @@ function App() {
         });
       });
       socket.on('new_question', (question: Question) => {
+        console.log('nq', question);
         setState((prevState) => {
           return { ...prevState, question };
         });
@@ -64,6 +69,11 @@ function App() {
           return { ...prevState, eliminations };
         });
       });
+      socket.on('awaiting_for', (undecidedRemaining: number) => {
+        setState((prevState) => {
+          return { ...prevState, undecidedRemaining };
+        });
+      });
     }
   }, []);
 
@@ -74,13 +84,20 @@ function App() {
 
   useEffect(() => {
     // update client status based on information from what they're doing
-    if (state.candidates.includes(state.username))
-      setState({ ...state, status: 'candidate' });
+    let newStatus: ClientStatus = 'spectator';
+    if (state.candidates.includes(state.username)) newStatus = 'candidate';
     else if (
       state.eliminations.filter((x) => x.username === state.username).length
     )
-      setState({ ...state, status: 'eliminated' });
-    else setState({ ...state, status: 'spectator' });
+      newStatus = 'eliminated';
+
+    setState((prevState) => {
+      return {
+        ...state,
+        status: newStatus,
+        totalParticipants: state.candidates.length + state.eliminations.length,
+      };
+    });
   }, [state.candidates, state.eliminations]);
 
   return (
