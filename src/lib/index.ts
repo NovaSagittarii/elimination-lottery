@@ -6,3 +6,9 @@ export {
   type QuestionSet,
   type QuestionResult,
 } from './Question';
+
+export {
+  EliminationEvent,
+  type EliminationEventProps,
+  type SerializedEliminationEvent,
+} from './Event';

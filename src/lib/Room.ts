@@ -163,6 +163,9 @@ export class Room {
   public getQuestionResult() {
     return this.questionResult;
   }
+  public getCurrentRound() {
+    return this.currentRound;
+  }
 }
 
 export default Room;

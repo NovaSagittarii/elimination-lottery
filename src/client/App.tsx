@@ -7,7 +7,12 @@ import reactLogo from './assets/react.svg';
 import Counter from './components/Counter';
 import Client from './components/Client';
 import { EliminationRecord } from '../lib/Room';
-import { Question, QuestionResult } from '../lib';
+import {
+  EliminationEvent,
+  Question,
+  QuestionResult,
+  SerializedEliminationEvent,
+} from '../lib';
 
 export type ClientStatus = 'spectator' | 'candidate' | 'eliminated';
 export type AppState = {
@@ -71,9 +76,30 @@ function App() {
           return { ...prevState, candidates };
         });
       });
-      socket.on('eliminated', (eliminations: EliminationRecord[]) => {
+      // socket.on('eliminated', (eliminations: EliminationRecord[]) => {
+      //   setState((prevState) => {
+      //     return { ...prevState, eliminations };
+      //   });
+      // });
+      socket.on('elimination_event', (data: SerializedEliminationEvent) => {
+        const eliminationEvent = new EliminationEvent();
+        eliminationEvent.loadObject(data);
+        const eliminatedUsernames = new Set<string>(); // o replace them all with arrays
+        const newEliminations: EliminationRecord[] = eliminationEvent
+          .getEliminated()
+          .map((username) => {
+            eliminatedUsernames.add(username);
+            return {
+              username,
+              time: eliminationEvent.getTime(),
+            } as EliminationRecord;
+          });
         setState((prevState) => {
-          return { ...prevState, eliminations };
+          return {
+            ...prevState,
+            candidates: prevState.candidates.filter(x => !eliminatedUsernames.has(x)),
+            eliminations: prevState.eliminations.concat(newEliminations),
+          };
         });
       });
       socket.on('awaiting_for', (undecidedRemaining: number) => {

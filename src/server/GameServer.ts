@@ -1,7 +1,7 @@
 import { Server as SioServer } from 'socket.io';
 import { Server as HttpServer } from 'http';
 
-import { Room } from '../lib';
+import { EliminationEvent, Room } from '../lib';
 import { QUESTIONSETS } from '../../data';
 
 class GameServer extends SioServer {
@@ -98,9 +98,21 @@ class GameServer extends SioServer {
     // console.log('round ended...?');
     room.endRound();
     io.emit('question_result', room.getQuestionResult());
-    // (THIS DOES NOT WORK, need to spread it out or don't do this, socketio WILL get overloaded)
-    io.emit('candidates', room.getCandidateNames());
-    io.emit('eliminated', room.getEliminationLog());
+
+    // build elimination event (all people who were just eliminated)
+    const eliminationEvent = new EliminationEvent({
+      time: room.getCurrentRound(),
+    });
+    room
+      .getEliminationLog()
+      .filter(
+        (eliminationRecord) =>
+          eliminationRecord.time === room.getCurrentRound(),
+      )
+      .forEach((eliminationRecord) =>
+        eliminationEvent.addUser(eliminationRecord.username),
+      );
+    io.emit('elimination_event', eliminationEvent.exportAsObject());
     // console.log(room.getEliminationLog());
   }
 }
