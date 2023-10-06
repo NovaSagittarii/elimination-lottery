@@ -18,7 +18,14 @@ function App() {
     if (app === null && !init) {
       init = true;
       console.log('connecting');
-      setApp(io());
+      const socket = io();
+      setApp(socket);
+      
+      socket.on('connect', () => console.log('connected!'));
+      socket.on('disconnect', () => console.warn('disconnected!'));
+      socket.on('new_question', (data) => {
+        console.log(data);
+      });
     }
   }, []);
 
