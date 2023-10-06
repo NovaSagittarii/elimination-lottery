@@ -98,9 +98,10 @@ class GameServer extends SioServer {
     // console.log('round ended...?');
     room.endRound();
     io.emit('question_result', room.getQuestionResult());
-    // there is a more efficient way but this works for now
+    // (THIS DOES NOT WORK, need to spread it out or don't do this, socketio WILL get overloaded)
     io.emit('candidates', room.getCandidateNames());
     io.emit('eliminated', room.getEliminationLog());
+    // console.log(room.getEliminationLog());
   }
 }
 
