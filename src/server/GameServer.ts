@@ -23,8 +23,17 @@ class GameServer extends SioServer {
 
       socket.on('name', (data: string) => {
         data = data as string;
-        room.setUserName(socket.id, data);
-        console.log('omg', room.getActiveUserCount());
+        try {
+          room.setUserName(socket.id, data);
+          socket.emit('name_ack', room.getUser(socket.id)?.getName());
+          console.log('omg', room.getActiveUserCount());
+        } catch (err) {
+          console.warn('illegal name change (name taken)', socket.id);
+        }
+      });
+
+      socket.on('choice', (data: number) => {
+        room.setUserChoice(socket.id, data);
       });
 
       socket.on('disconnect', () => {
@@ -51,6 +60,10 @@ class GameServer extends SioServer {
     });
     console.log('game started');
     room.startGame();
+    io.emit('candidates', room.getCandidateNames());
+    // for (const [k, v] of room.getCandidateEntries()) {
+    //   io.to(k).emit('name', v.getName());
+    // }
 
     room.startRound();
     io.emit('new_question', room.getQuestion());

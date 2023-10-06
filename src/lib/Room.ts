@@ -1,7 +1,7 @@
 import * as LIB from '.';
 
 export type EliminationRecord = {
-  user: LIB.User;
+  username: string;
   time: number;
 };
 
@@ -52,6 +52,8 @@ export class Room {
         this.candidates.set(key, user);
       }
     }
+    // console.log('users', this.users);
+    // console.log('ok', this.candidates);
   }
   public getActiveUserCount() {
     // console.log("huh?");
@@ -113,13 +115,23 @@ export class Room {
         passed_candidates.set(key, user);
       } else {
         this.eliminated_candidates.push({
-          user,
+          username: user.getName(),
           time: this.currentRound,
         });
       }
     }
 
     this.candidates = passed_candidates;
+  }
+  public getCandidateNames(): string[] {
+    // console.log('looking up names', [...this.candidates.values()]);
+    return [...this.candidates.values()].map((x) => x.getName());
+  }
+  public getEliminationLog() {
+    return this.eliminated_candidates;
+  }
+  public getCandidateEntries() {
+    return this.candidates.entries();
   }
 }
 
