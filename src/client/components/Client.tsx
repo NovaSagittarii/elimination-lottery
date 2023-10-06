@@ -83,6 +83,7 @@ export default function Client() {
           STATUS_STYLING.get(state.status)
         }
       >
+        {state.username + ', '}
         {state.status.toUpperCase()}
       </div>
     </div>
