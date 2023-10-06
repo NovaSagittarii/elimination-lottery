@@ -9,11 +9,12 @@ import Client from './components/Client';
 import { EliminationRecord } from '../lib/Room';
 import { Question } from '../lib';
 
+export type ClientStatus = 'spectator' | 'candidate' | 'eliminated';
 export type AppState = {
   username: string;
   candidates: string[];
   eliminations: EliminationRecord[];
-  status: 'spectator' | 'candidate' | 'eliminated';
+  status: ClientStatus;
   question: Question | null;
 };
 export const InitialAppState: AppState = {

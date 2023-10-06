@@ -1,11 +1,18 @@
 import { useContext, useEffect, useState } from 'react';
 import { Button } from '@mui/material';
 
-import { SocketIoClientContext } from '../App';
+import { AppStateContext, ClientStatus, SocketIoClientContext } from '../App';
 import InputText from './InputText';
+
+const STATUS_STYLING = new Map<ClientStatus, string>([
+  ['spectator', 'bg-slate-700'],
+  ['eliminated', 'bg-red-600'],
+  ['candidate', 'bg-green-600'],
+]);
 
 export default function Client() {
   const app = useContext(SocketIoClientContext);
+  const state = useContext(AppStateContext);
   const [username, setUsername] = useState<string>('');
   const [inputName, setInputName] = useState<string>('');
 
@@ -14,7 +21,7 @@ export default function Client() {
   }, [username]);
 
   return (
-    <div className='m-auto max-w-lg h-screen flex flex-col justify-center align-middle'>
+    <div className='m-auto max-w-lg h-screen flex flex-col justify-center align-middle '>
       {!username && (
         <>
           <InputText value={inputName} setValue={setInputName} />
@@ -24,6 +31,12 @@ export default function Client() {
         </>
       )}
       {username && <>you have a username</>}
+      <div
+        className={
+          'fixed left-0 bottom-0 w-full h-4 overflow-hidden transition-colors duration-300 ' +
+          STATUS_STYLING.get(state.status)
+        }
+      ></div>
     </div>
   );
 }
