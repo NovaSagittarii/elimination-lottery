@@ -1,39 +1,17 @@
 import express from 'express';
 import ViteExpress from 'vite-express';
-import { Server } from 'socket.io';
+// import { Server } from 'socket.io';
 import { createServer } from 'http';
-import { Room } from '../lib';
-import { QUESTIONSETS } from '../../data';
+import GameServer from './GameServer';
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server);
+const io = new GameServer(server);
+
+const room = io.room;
 
 app.get('/hello', (_, res) => {
   res.send('Hello Vite + React + TypeScript!');
-});
-
-const room = new Room(); // single room cuz it's easier to code and don't expect multirooms
-room.setQuestionSet(QUESTIONSETS[0]);
-
-io.on('connection', (socket) => {
-  console.log('  connect', socket.id);
-  room.addUser(socket.id);
-
-  socket.on('count', (data) => {
-    console.log('count', socket.id, data);
-  });
-
-  socket.on('name', (data: string) => {
-    data = data as string;
-    room.setUserName(socket.id, data);
-    console.log('omg', room.getActiveUserCount());
-  });
-
-  socket.on('disconnect', () => {
-    console.log('disconnect', socket.id);
-    room.removeUser(socket.id);
-  });
 });
 
 server.listen(3000, () => {
