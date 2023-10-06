@@ -37,6 +37,7 @@ class GameServer extends SioServer {
           // todo: check user is participanting?
           const prevChoice = room.getUser(socket.id)?.getChoice();
           room.setUserChoice(socket.id, data);
+          socket.emit('choice_ack', room.getUser(socket.id)?.getChoice());
           // made their choice
           if (prevChoice === -1) this.broadcastUndecided();
         }

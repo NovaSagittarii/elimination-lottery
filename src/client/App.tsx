@@ -22,6 +22,7 @@ export type AppState = {
   status: ClientStatus;
   question: Question | null;
   questionResult: QuestionResult | null;
+  selectedChoice: number;
   lowestNonzeroCandidateVote: number;
   totalParticipants: number;
   undecidedRemaining: number;
@@ -33,6 +34,7 @@ export const InitialAppState: AppState = {
   status: 'spectator',
   question: null,
   questionResult: null,
+  selectedChoice: -1,
   lowestNonzeroCandidateVote: -1,
   totalParticipants: -1,
   undecidedRemaining: -1,
@@ -62,6 +64,11 @@ function App() {
           return { ...prevState, username };
         });
       });
+      socket.on('choice_ack', (selectedChoice: number) => {
+        setState((prevState) => {
+          return { ...prevState, selectedChoice };
+        });
+      });
       socket.on('new_question', (question: Question) => {
         // console.log('nq', question);
         setState((prevState) => {
@@ -80,7 +87,11 @@ function App() {
           return {
             ...prevState,
             questionResult,
-            lowestNonzeroCandidateVote: questionResult.candidateVotes.filter(x => x === lowest).length > 1 ? lowest : -1,
+            lowestNonzeroCandidateVote:
+              questionResult.candidateVotes.filter((x) => x === lowest).length >
+              1
+                ? lowest
+                : -1,
           };
         });
       });

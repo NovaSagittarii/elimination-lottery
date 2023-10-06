@@ -42,9 +42,15 @@ export default function Client() {
               </span>
               {question.options.map((option, index) => (
                 <Button
+                  className={
+                    state.selectedChoice === -1 ||
+                    index === state.selectedChoice
+                      ? 'opacity-100'
+                      : 'opacity-50'
+                  }
                   variant='outlined'
                   key={index}
-                  disabled={!!state.questionResult}
+                  disabled={!!state.questionResult || state.selectedChoice >= 0}
                   onClick={() => {
                     app?.emit('choice', index);
                   }}
