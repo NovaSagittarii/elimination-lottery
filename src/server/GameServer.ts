@@ -51,20 +51,26 @@ class GameServer extends SioServer {
   private broadcastUndecided() {
     this.io.emit('awaiting_for', this.room.getPendingChoiceCount());
   }
-  public async enableAutostart(requiredPlayers: number = 1) {
+  public async enableAutostart(
+    requiredPlayers: number = 1,
+    ticksUntilStart: number = 5,
+  ) {
     const { io, room } = this;
     console.log(`waiting for ${requiredPlayers} players until starting`);
     // wait until at least 1 person and no changes for 5 seconds
     await new Promise((res) => {
       let ok = 0;
       let prev = -1;
-      setInterval(() => {
+      const interval = setInterval(() => {
         let curr = room.getActiveUserCount();
         if (curr >= requiredPlayers && curr === prev) ++ok;
         else ok = 0;
         prev = curr;
 
-        if (ok >= 5) res(undefined);
+        if (curr >= requiredPlayers && ok >= ticksUntilStart) {
+          res(undefined);
+          clearInterval(interval);
+        }
       }, 1000);
     });
     console.log('game started');
@@ -77,6 +83,24 @@ class GameServer extends SioServer {
     room.startRound();
     io.emit('new_question', room.getQuestion());
     this.broadcastUndecided();
+
+    // something like callbacks would be appropriate, but doing await looks nice too
+    await new Promise((res) => {
+      let remainingChecks = 8;
+      const interval = setInterval(() => {
+        // console.log('waiting for', room.getPendingChoiceCount());
+        if (--remainingChecks < 0 || room.getPendingChoiceCount() === 0) {
+          res(undefined);
+          clearInterval(interval);
+        }
+      }, 2500);
+    });
+    // console.log('round ended...?');
+    room.endRound();
+    io.emit('question_result', room.getQuestionResult());
+    // there is a more efficient way but this works for now
+    io.emit('candidates', room.getCandidateNames());
+    io.emit('eliminated', room.getEliminationLog());
   }
 }
 

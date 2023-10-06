@@ -7,7 +7,7 @@ import reactLogo from './assets/react.svg';
 import Counter from './components/Counter';
 import Client from './components/Client';
 import { EliminationRecord } from '../lib/Room';
-import { Question } from '../lib';
+import { Question, QuestionResult } from '../lib';
 
 export type ClientStatus = 'spectator' | 'candidate' | 'eliminated';
 export type AppState = {
@@ -16,6 +16,7 @@ export type AppState = {
   eliminations: EliminationRecord[];
   status: ClientStatus;
   question: Question | null;
+  questionResult: QuestionResult | null;
   totalParticipants: number;
   undecidedRemaining: number;
 };
@@ -25,6 +26,7 @@ export const InitialAppState: AppState = {
   eliminations: [],
   status: 'spectator',
   question: null,
+  questionResult: null,
   totalParticipants: -1,
   undecidedRemaining: -1,
 };
@@ -54,9 +56,14 @@ function App() {
         });
       });
       socket.on('new_question', (question: Question) => {
-        console.log('nq', question);
+        // console.log('nq', question);
         setState((prevState) => {
           return { ...prevState, question };
+        });
+      });
+      socket.on('question_result', (questionResult: QuestionResult) => {
+        setState((prevState) => {
+          return { ...prevState, questionResult };
         });
       });
       socket.on('candidates', (candidates: string[]) => {

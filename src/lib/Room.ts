@@ -15,6 +15,7 @@ export class Room {
   private eliminationHistory: EliminationRecord[] = [];
   private questionSet: LIB.QuestionSet | null = null;
   private question: LIB.Question | null = null;
+  private questionResult: LIB.QuestionResult | null = null;
   private currentRound: number = 0;
   constructor() {
     this.initialize();
@@ -81,6 +82,7 @@ export class Room {
     // console.log(this.candidates);
   }
   endRound() {
+    if (this.question === null) throw 'cannot end round: round was not started';
     const passed_candidates: typeof this.candidates = new Map();
     const choice_count = new Map<number, number>();
     const tiebreaker = new Map<number, number>();
@@ -96,12 +98,22 @@ export class Room {
         tiebreaker.set(choice, tiebreaker.get(choice)! + 1);
       }
     }
+    this.questionResult = {
+      candidateVotes: this.question.options.map(
+        (_, i) => choice_count.get(i) || 0,
+      ),
+      tiebreakerVotes: this.question.options.map(
+        (_, i) => tiebreaker.get(i) || 0,
+      ),
+    };
 
     let worst_choice = -1;
     let choices = [...choice_count.entries()]
       .filter(([_choice, count]) => count)
       .sort((a, b) => a[1] - b[1]);
     choices = choices.filter((x) => x[1] === choices[0][1]);
+    console.log(choices);
+
     if (choices.length === 1) {
       // only one is the minimum
       worst_choice = choices[0][0];
@@ -116,6 +128,7 @@ export class Room {
     }
 
     for (const [key, user] of this.candidates.entries()) {
+      // console.log(user.getName(), user.getChoice(), worst_choice);
       if (user.getChoice() !== -1 && user.getChoice() !== worst_choice) {
         passed_candidates.set(key, user);
       } else {
@@ -126,6 +139,7 @@ export class Room {
         });
       }
     }
+    // console.log(passed_candidates, this.eliminationHistory);
 
     this.candidates = passed_candidates;
   }
@@ -145,6 +159,9 @@ export class Room {
   }
   public getCandidateEntries() {
     return this.candidates.entries();
+  }
+  public getQuestionResult() {
+    return this.questionResult;
   }
 }
 

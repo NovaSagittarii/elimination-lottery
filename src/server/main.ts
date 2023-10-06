@@ -8,7 +8,7 @@ const app = express();
 const server = createServer(app);
 const io = new GameServer(server);
 
-io.enableAutostart();
+io.enableAutostart(3, 0);
 const room = io.room;
 
 app.get('/hello', (_, res) => {
