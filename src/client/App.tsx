@@ -22,6 +22,7 @@ export type AppState = {
   status: ClientStatus;
   question: Question | null;
   questionResult: QuestionResult | null;
+  lowestNonzeroCandidateVote: number;
   totalParticipants: number;
   undecidedRemaining: number;
 };
@@ -32,6 +33,7 @@ export const InitialAppState: AppState = {
   status: 'spectator',
   question: null,
   questionResult: null,
+  lowestNonzeroCandidateVote: -1,
   totalParticipants: -1,
   undecidedRemaining: -1,
 };
@@ -63,12 +65,23 @@ function App() {
       socket.on('new_question', (question: Question) => {
         // console.log('nq', question);
         setState((prevState) => {
-          return { ...prevState, question };
+          return {
+            ...prevState,
+            question,
+            questionResult: null,
+          };
         });
       });
       socket.on('question_result', (questionResult: QuestionResult) => {
         setState((prevState) => {
-          return { ...prevState, questionResult };
+          const lowest = Math.min(
+            ...questionResult.candidateVotes.filter((x) => x > 0),
+          );
+          return {
+            ...prevState,
+            questionResult,
+            lowestNonzeroCandidateVote: questionResult.candidateVotes.filter(x => x === lowest).length > 1 ? lowest : -1,
+          };
         });
       });
       socket.on('candidates', (candidates: string[]) => {
@@ -97,7 +110,9 @@ function App() {
         setState((prevState) => {
           return {
             ...prevState,
-            candidates: prevState.candidates.filter(x => !eliminatedUsernames.has(x)),
+            candidates: prevState.candidates.filter(
+              (x) => !eliminatedUsernames.has(x),
+            ),
             eliminations: prevState.eliminations.concat(newEliminations),
           };
         });

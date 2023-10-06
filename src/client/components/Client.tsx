@@ -44,11 +44,25 @@ export default function Client() {
                 <Button
                   variant='outlined'
                   key={index}
+                  disabled={!!state.questionResult}
                   onClick={() => {
                     app?.emit('choice', index);
                   }}
                 >
-                  {option}
+                  <div className='flex gap-2'>
+                    {[
+                      option,
+                      state.questionResult &&
+                        `(${state.questionResult.candidateVotes[index]}${
+                          state.questionResult.candidateVotes[index] ===
+                          state.lowestNonzeroCandidateVote
+                            ? ` + ${state.questionResult.tiebreakerVotes[index]}`
+                            : ''
+                        })`,
+                    ].map((label, index) => (
+                      <span key={index}>{label}</span>
+                    ))}
+                  </div>
                 </Button>
               ))}
             </div>
