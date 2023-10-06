@@ -67,7 +67,7 @@ export class Room {
     if (this.questionSet === null) throw 'no questions';
     this.question =
       this.questionSet.questions[
-        Math.round(this.questionSet.questions.length * Math.random())
+        Math.floor(this.questionSet.questions.length * Math.random())
       ];
     for (const user of this.candidates.values()) user.setChoice(-1);
   }
