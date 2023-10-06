@@ -4,6 +4,14 @@ import { Server as HttpServer } from 'http';
 import { EliminationEvent, Room } from '../lib';
 import { QUESTIONSETS } from '../../data';
 
+export const CHECK_INTERVAL = 2500;
+export const CHECK_MAXIMUM = 8;
+export const DURATION = CHECK_INTERVAL * CHECK_MAXIMUM;
+
+export type GameServerConfiguration = {
+  questionDuration: number;
+};
+
 class GameServer extends SioServer {
   public room: Room;
   private io: SioServer;
@@ -16,6 +24,9 @@ class GameServer extends SioServer {
     io.on('connection', (socket) => {
       console.log('  connect', socket.id);
       room.addUser(socket.id);
+      socket.emit('config', {
+        questionDuration: DURATION,
+      } as GameServerConfiguration);
 
       socket.on('count', (data) => {
         console.log('count', socket.id, data);
@@ -87,14 +98,14 @@ class GameServer extends SioServer {
 
     // something like callbacks would be appropriate, but doing await looks nice too
     await new Promise((res) => {
-      let remainingChecks = 8;
+      let remainingChecks = CHECK_MAXIMUM;
       const interval = setInterval(() => {
         // console.log('waiting for', room.getPendingChoiceCount());
         if (--remainingChecks < 0 || room.getPendingChoiceCount() === 0) {
           res(undefined);
           clearInterval(interval);
         }
-      }, 2500);
+      }, CHECK_INTERVAL);
     });
     // console.log('round ended...?');
     room.endRound();

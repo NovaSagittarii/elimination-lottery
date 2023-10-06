@@ -1,7 +1,12 @@
 import { useContext, useEffect, useState } from 'react';
 import { Button, FormControl, FormLabel } from '@mui/material';
 
-import { AppStateContext, ClientStatus, SocketIoClientContext } from '../App';
+import {
+  AppStateContext,
+  ClientStatus,
+  SocketIoClientContext,
+  TimerContext,
+} from '../App';
 import InputText from './InputText';
 
 const STATUS_STYLING = new Map<ClientStatus, string>([
@@ -13,6 +18,7 @@ const STATUS_STYLING = new Map<ClientStatus, string>([
 export default function Client() {
   const app = useContext(SocketIoClientContext);
   const state = useContext(AppStateContext);
+  const currentTime = useContext(TimerContext);
   const [username, setUsername] = useState<string>('');
   const [inputName, setInputName] = useState<string>('');
 
@@ -34,8 +40,15 @@ export default function Client() {
       )}
       {username ? (
         question ? (
-          <div>
-            <div>{`waiting on ${state.undecidedRemaining} people`}</div>
+          <div className='flex flex-col'>
+            <div className='text-lg font-semibold'>{`Round ${state.round}`}</div>
+            <div className='text-right'>
+              {state.questionResult
+                ? 'ended'
+                : `${Math.round(
+                    Math.max(0, state.questionEndTime - currentTime) / 1000,
+                  )}s`}
+            </div>
             <div className='flex flex-col gap-2'>
               <span className='font-semibold text-lg text-slate-700 text-center'>
                 {question.title}
@@ -72,6 +85,7 @@ export default function Client() {
                 </Button>
               ))}
             </div>
+            <div className='text-right'>{`waiting on ${state.undecidedRemaining} people`}</div>
           </div>
         ) : (
           <div> awaiting question </div>
@@ -83,7 +97,7 @@ export default function Client() {
           STATUS_STYLING.get(state.status)
         }
       >
-        {state.username + ', '}
+        {state.username && state.username + ', '}
         {state.status.toUpperCase()}
       </div>
     </div>

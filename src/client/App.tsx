@@ -13,9 +13,11 @@ import {
   QuestionResult,
   SerializedEliminationEvent,
 } from '../lib';
+import { type GameServerConfiguration } from '../server/GameServer';
 
 export type ClientStatus = 'spectator' | 'candidate' | 'eliminated';
 export type AppState = {
+  round: number;
   username: string;
   candidates: string[];
   eliminations: EliminationRecord[];
@@ -26,8 +28,11 @@ export type AppState = {
   lowestNonzeroCandidateVote: number;
   totalParticipants: number;
   undecidedRemaining: number;
+  questionEndTime: number;
+  questionDuration: number;
 };
 export const InitialAppState: AppState = {
+  round: 0,
   username: '',
   candidates: [],
   eliminations: [],
@@ -38,27 +43,43 @@ export const InitialAppState: AppState = {
   lowestNonzeroCandidateVote: -1,
   totalParticipants: -1,
   undecidedRemaining: -1,
+  questionEndTime: -1,
+  questionDuration: -1,
 };
 export const AppStateContext = createContext<AppState>(InitialAppState);
 
 export type SocketIoClient = ReturnType<typeof io> | null;
 export const SocketIoClientContext = createContext<SocketIoClient>(null);
 
+export const TimerContext = createContext<number>(0);
+
 let init = false;
 
 function App() {
   const [app, setApp] = useState<SocketIoClient>(null);
   const [state, setState] = useState<AppState>(InitialAppState);
+  const [currentTime, setTime] = useState<number>(0);
 
   useEffect(() => {
     if (app === null && !init) {
       init = true;
+
+      setInterval(() => setTime(Date.now()), 1000);
+
       console.log('connecting');
       const socket = io();
       setApp(socket);
 
       socket.on('connect', () => console.log('connected!'));
       socket.on('disconnect', () => console.warn('disconnected!'));
+      socket.on('config', ({ questionDuration }: GameServerConfiguration) => {
+        setState((prevState) => {
+          return {
+            ...prevState,
+            questionDuration,
+          };
+        });
+      });
       socket.on('name_ack', (username: string) => {
         setState((prevState) => {
           return { ...prevState, username };
@@ -74,8 +95,10 @@ function App() {
         setState((prevState) => {
           return {
             ...prevState,
+            round: prevState.round + 1,
             question,
             questionResult: null,
+            questionEndTime: Date.now() + prevState.questionDuration,
           };
         });
       });
@@ -125,6 +148,7 @@ function App() {
               (x) => !eliminatedUsernames.has(x),
             ),
             eliminations: prevState.eliminations.concat(newEliminations),
+            undecidedRemaining: 0, // force everyone to be done
           };
         });
       });
@@ -162,7 +186,9 @@ function App() {
   return (
     <SocketIoClientContext.Provider value={app}>
       <AppStateContext.Provider value={state}>
-        <Client />
+        <TimerContext.Provider value={currentTime}>
+          <Client />
+        </TimerContext.Provider>
       </AppStateContext.Provider>
     </SocketIoClientContext.Provider>
   );
