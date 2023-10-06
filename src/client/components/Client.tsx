@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { Button } from '@mui/material';
+import { Button, FormControl, FormLabel } from '@mui/material';
 
 import { AppStateContext, ClientStatus, SocketIoClientContext } from '../App';
 import InputText from './InputText';
@@ -16,6 +16,8 @@ export default function Client() {
   const [username, setUsername] = useState<string>('');
   const [inputName, setInputName] = useState<string>('');
 
+  const { question } = state;
+
   useEffect(() => {
     if (username) app?.emit('name', username);
   }, [username]);
@@ -30,7 +32,27 @@ export default function Client() {
           </Button>
         </>
       )}
-      {username && <>you have a username</>}
+      {username && question ? (
+        <div>
+          <div className='flex flex-col gap-2'>
+            <span className='font-semibold text-lg text-slate-700 text-center'>{question.title}</span>
+            {
+              question.options.map((option, index) => (
+                <Button 
+                  variant='outlined' key={index}
+                  onClick={() => {
+                    app?.emit('choice', index);
+                  }}
+                >
+                  {option}
+                </Button>
+              ))
+            }
+          </div>
+        </div>
+      ) : (
+        <div> awaiting question </div>
+      )}
       <div
         className={
           'fixed left-0 bottom-0 w-full h-6 flex justify-center items-center text-[#0008] text-sm font-extrabold overflow-hidden transition-colors duration-300 ' +
