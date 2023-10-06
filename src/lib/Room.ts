@@ -32,7 +32,10 @@ export class Room {
   addUser(key: string) {
     this.users.set(key, new LIB.User());
   }
-  setName(key: string, newName: string) {
+  removeUser(key: string) {
+    this.users.delete(key);
+  }
+  setUserName(key: string, newName: string) {
     if (!this.getUser(key)) throw 'key not in user map';
     if (this.usedNames.has(newName)) return false;
     this.usedNames.add(newName);
@@ -41,14 +44,19 @@ export class Room {
     this.usedNames.add(newName);
     user.setName(newName);
   }
-  startGame() {
+  public startGame() {
     this.initialize();
-    for (const [key, user] of Object.entries(this.users)) {
+    for (const [key, user] of this.users.entries()) {
       // users must have set a name to be qualified
       if (user.getName()) {
         this.candidates.set(key, user);
       }
     }
+  }
+  public getActiveUserCount() {
+    // console.log("huh?");
+    // console.log([...this.users.values()]);
+    return [...this.users.values()].filter((x) => x.getName()).length;
   }
   startRound() {
     ++this.currentRound;
@@ -57,7 +65,7 @@ export class Room {
       this.questionSet.questions[
         Math.round(this.questionSet.questions.length * Math.random())
       ];
-    for (const user of Object.values(this.candidates)) user.setChoice(-1);
+    for (const user of this.candidates.values()) user.setChoice(-1);
   }
   public getQuestion() {
     return this.question;
@@ -70,7 +78,7 @@ export class Room {
     const choice_count = new Map<number, number>();
     const tiebreaker = new Map<number, number>();
 
-    for (const [key, user] of Object.entries(this.users)) {
+    for (const [key, user] of this.users.entries()) {
       const choice = user.getChoice();
       if (!choice_count.has(choice)) choice_count.set(choice, 0);
       if (!tiebreaker.has(choice)) tiebreaker.set(choice, 0);
