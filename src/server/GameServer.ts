@@ -3,6 +3,7 @@ import { Server as HttpServer } from 'http';
 
 import { EliminationEvent, Room } from '../lib';
 import { QUESTIONSETS } from '../../data';
+import { sleep } from './asyncUtils';
 
 export const CHECK_INTERVAL = 2500;
 export const CHECK_MAXIMUM = 8;
@@ -85,6 +86,7 @@ class GameServer extends SioServer {
         }
       }, 1000);
     });
+
     console.log('game started');
     room.startGame();
     io.emit('candidates', room.getCandidateNames());
@@ -92,40 +94,46 @@ class GameServer extends SioServer {
     //   io.to(k).emit('name', v.getName());
     // }
 
-    room.startRound();
-    io.emit('new_question', room.getQuestion());
-    this.broadcastUndecided();
+    while (!room.hasWinner()) {
+      room.startRound();
+      io.emit('new_question', room.getQuestion());
+      this.broadcastUndecided();
 
-    // something like callbacks would be appropriate, but doing await looks nice too
-    await new Promise((res) => {
-      let remainingChecks = CHECK_MAXIMUM;
-      const interval = setInterval(() => {
-        // console.log('waiting for', room.getPendingChoiceCount());
-        if (--remainingChecks < 0 || room.getPendingChoiceCount() === 0) {
-          res(undefined);
-          clearInterval(interval);
-        }
-      }, CHECK_INTERVAL);
-    });
-    // console.log('round ended...?');
-    room.endRound();
-    io.emit('question_result', room.getQuestionResult());
+      // something like callbacks would be appropriate, but doing await looks nice too
+      await new Promise((res) => {
+        let remainingChecks = CHECK_MAXIMUM;
+        const interval = setInterval(() => {
+          // console.log('waiting for', room.getPendingChoiceCount());
+          if (--remainingChecks < 0 || room.getPendingChoiceCount() === 0) {
+            res(undefined);
+            clearInterval(interval);
+          }
+        }, CHECK_INTERVAL);
+      });
+      // console.log('round ended...?');
+      room.endRound();
+      io.emit('question_result', room.getQuestionResult());
 
-    // build elimination event (all people who were just eliminated)
-    const eliminationEvent = new EliminationEvent({
-      time: room.getCurrentRound(),
-    });
-    room
-      .getEliminationLog()
-      .filter(
-        (eliminationRecord) =>
-          eliminationRecord.time === room.getCurrentRound(),
-      )
-      .forEach((eliminationRecord) =>
-        eliminationEvent.addUser(eliminationRecord.username),
-      );
-    io.emit('elimination_event', eliminationEvent.exportAsObject());
-    // console.log(room.getEliminationLog());
+      // build elimination event (all people who were just eliminated)
+      const eliminationEvent = new EliminationEvent({
+        time: room.getCurrentRound(),
+      });
+      room
+        .getEliminationLog()
+        .filter(
+          (eliminationRecord) =>
+            eliminationRecord.time === room.getCurrentRound(),
+        )
+        .forEach((eliminationRecord) =>
+          eliminationEvent.addUser(eliminationRecord.username),
+        );
+      io.emit('elimination_event', eliminationEvent.exportAsObject());
+      // console.log(room.getEliminationLog());
+      await sleep(2000);
+    }
+
+    console.log('game ended!', room.getEliminationLog());
+    io.emit('game_end');
   }
 }
 

@@ -93,34 +93,69 @@ function App() {
       socket.on('new_question', (question: Question) => {
         // console.log('nq', question);
         setState((prevState) => {
+          // need to also reset anything related to questions
           return {
             ...prevState,
             round: prevState.round + 1,
             question,
             questionResult: null,
             questionEndTime: Date.now() + prevState.questionDuration,
+            selectedChoice: -1,
           };
         });
       });
       socket.on('question_result', (questionResult: QuestionResult) => {
         setState((prevState) => {
-          const lowest = Math.min(
-            ...questionResult.candidateVotes.filter((x) => x > 0),
+          // vote counts for each choice
+          const candidateVotes = questionResult.candidateVotes.filter(
+            (x) => x > 0,
           );
+          const tiebreakerVotes = questionResult.tiebreakerVotes.filter(
+            (x) => x > 0,
+          );
+
+          // smallest nonzero (candidate/tiebreaker) votes
+          const candidateLowest = Math.min(...candidateVotes);
+          const tiebreakerLowest = Math.min(...tiebreakerVotes);
+          let elimination = -1;
+
+          // there was at least an alternative
+          if (candidateVotes.length >= 2) {
+            // a tie for lowest
+            if (
+              candidateVotes.filter((x) => x === candidateLowest).length >= 2
+            ) {
+              // use tiebreaker (if only one)
+              if (
+                tiebreakerVotes.filter((x) => x === tiebreakerLowest).length ===
+                1
+              ) {
+                elimination = tiebreakerLowest;
+              }
+            } else {
+              // no tie, just take the lowest candidate amount
+              elimination = candidateLowest;
+            }
+          }
           return {
             ...prevState,
             questionResult,
-            lowestNonzeroCandidateVote:
-              questionResult.candidateVotes.filter((x) => x === lowest).length >
-              1
-                ? lowest
-                : -1,
+            lowestNonzeroCandidateVote: elimination,
           };
         });
       });
+
+      // signals new round
       socket.on('candidates', (candidates: string[]) => {
         setState((prevState) => {
-          return { ...prevState, candidates };
+          // username and questionDuration need to persist
+          const { username, questionDuration } = prevState;
+          return {
+            ...InitialAppState,
+            username,
+            questionDuration,
+            candidates, // new list of candidates
+          } as AppState;
         });
       });
       // socket.on('eliminated', (eliminations: EliminationRecord[]) => {
@@ -156,6 +191,9 @@ function App() {
         setState((prevState) => {
           return { ...prevState, undecidedRemaining };
         });
+      });
+      socket.on('game_end', () => {
+        console.log('game_end');
       });
     }
   }, []);

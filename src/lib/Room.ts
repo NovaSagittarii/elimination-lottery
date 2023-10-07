@@ -166,6 +166,9 @@ export class Room {
   public getCurrentRound() {
     return this.currentRound;
   }
+  public hasWinner() {
+    return this.candidates.size <= 1;
+  }
 }
 
 export default Room;
