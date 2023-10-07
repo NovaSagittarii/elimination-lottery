@@ -14,6 +14,7 @@ import {
   SerializedEliminationEvent,
 } from '../lib';
 import { type GameServerConfiguration } from '../server/GameServer';
+import { Sounds } from './Sounds';
 
 export type ClientStatus = 'spectator' | 'candidate' | 'eliminated';
 export type AppState = {
@@ -92,6 +93,8 @@ function App() {
       });
       socket.on('new_question', (question: Question) => {
         // console.log('nq', question);
+        Sounds.get('notify')?.play();
+
         setState((prevState) => {
           // need to also reset anything related to questions
           return {
