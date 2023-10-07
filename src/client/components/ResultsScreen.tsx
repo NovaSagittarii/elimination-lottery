@@ -23,7 +23,7 @@ export default function ResultsScreen() {
         {'Results'}
         <div className='text-base font-normal text-slate-500 flex gap-1'>
           {'The winner is'}
-          <span className='text-orange-700'>{state.candidates[0]}</span>
+          <span className='text-orange-700'>{state.candidates.join(', ')}</span>
         </div>
       </div>
       <div className='flex flex-col bg-slate-50 rounded p-2 '>
