@@ -16,7 +16,11 @@ import {
 import { type GameServerConfiguration } from '../server/GameServer';
 import { Sounds } from './Sounds';
 
-export type ClientStatus = 'spectator' | 'candidate' | 'eliminated' | 'champion';
+export type ClientStatus =
+  | 'spectator'
+  | 'candidate'
+  | 'eliminated'
+  | 'champion';
 export type AppState = {
   round: number;
   username: string;
