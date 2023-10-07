@@ -69,24 +69,32 @@ class GameServer extends SioServer {
     ticksUntilStart: number = 5,
   ) {
     const { io, room } = this;
-    console.log(`waiting for ${requiredPlayers} players until starting`);
-    // wait until at least 1 person and no changes for 5 seconds
-    await new Promise((res) => {
-      let ok = 0;
-      let prev = -1;
-      const interval = setInterval(() => {
-        let curr = room.getActiveUserCount();
-        if (curr >= requiredPlayers && curr === prev) ++ok;
-        else ok = 0;
-        prev = curr;
 
-        if (curr >= requiredPlayers && ok >= ticksUntilStart) {
-          res(undefined);
-          clearInterval(interval);
-        }
-      }, 1000);
-    });
+    while (true) {
+      console.log(`waiting for ${requiredPlayers} players until starting`);
+      // wait until at least REQUIRED_PLAYERS person and does not go under for TICKS_UNTIL_START seconds
+      await new Promise((res) => {
+        let ok = 0;
+        let prev = -1;
+        const interval = setInterval(() => {
+          let curr = room.getActiveUserCount();
+          if (curr >= requiredPlayers && curr === prev) ++ok;
+          else ok = 0;
+          prev = curr;
 
+          if (curr >= requiredPlayers && ok >= ticksUntilStart) {
+            res(undefined);
+            clearInterval(interval);
+          }
+        }, 1000);
+      });
+
+      await this.startRound();
+      await sleep(10000);
+    }
+  }
+  private async startRound() {
+    const { io, room } = this;
     console.log('game started');
     room.startGame();
     io.emit('candidates', room.getCandidateNames());
