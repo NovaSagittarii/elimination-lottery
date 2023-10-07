@@ -36,7 +36,11 @@ export class Room {
     this.users.set(key, new LIB.User());
   }
   removeUser(key: string) {
+    const user = this.users.get(key);
+    if (user) this.disqualifyCandidate(key, user, this.currentRound);
     this.users.delete(key);
+    this.candidates.delete(key);
+    this.eliminatedCandidates.delete(key);
   }
   setUserName(key: string, newName: string) {
     if (!this.getUser(key)) throw 'key not in user map';
@@ -134,16 +138,19 @@ export class Room {
       if (user.getChoice() !== -1 && user.getChoice() !== worst_choice) {
         passed_candidates.set(key, user);
       } else {
-        this.eliminatedCandidates.set(key, user);
-        this.eliminationHistory.push({
-          username: user.getName(),
-          time: this.currentRound,
-        });
+        this.disqualifyCandidate(key, user, this.currentRound);
       }
     }
     // console.log(passed_candidates, this.eliminationHistory);
 
     this.candidates = passed_candidates;
+  }
+  private disqualifyCandidate(key: string, user: LIB.User, round: number) {
+    this.eliminatedCandidates.set(key, user);
+    this.eliminationHistory.push({
+      username: user.getName(),
+      time: round,
+    });
   }
   public getCandidateNames(): string[] {
     // console.log('looking up names', [...this.candidates.values()]);

@@ -57,6 +57,9 @@ class GameServer extends SioServer {
 
       socket.on('disconnect', () => {
         console.log('disconnect', socket.id);
+        if(room.getUser(socket.id)?.getName() && room.getUser(socket.id)?.getChoice() === -1) {
+          this.broadcastUndecided();
+        }
         room.removeUser(socket.id);
       });
     });
