@@ -8,6 +8,7 @@ import {
   TimerContext,
 } from '../App';
 import InputText from './InputText';
+import EliminationAggregation from './EliminationAggregation';
 
 const STATUS_STYLING = new Map<ClientStatus, string>([
   ['spectator', 'bg-slate-400'],
@@ -29,7 +30,7 @@ export default function Client() {
   }, [username]);
 
   return (
-    <div className='m-auto p-10 max-w-lg h-screen flex flex-col justify-center align-middle '>
+    <div className='m-auto p-10 max-w-lg h-screen flex flex-col justify-center align-middle gap-4 '>
       {!username && (
         <>
           <InputText value={inputName} setValue={setInputName} />
@@ -40,8 +41,13 @@ export default function Client() {
       )}
       {username ? (
         question ? (
-          <div className='flex flex-col'>
-            <div className='text-lg font-semibold'>{`Round ${state.round}`}</div>
+          <div className='flex flex-col gap-2'>
+            <div className='text-lg font-semibold'>
+              {`Round ${state.round}`}
+              <div className='text-sm font-normal text-slate-500'>
+                {`${state.candidates.length} candidates remaining`}
+              </div>
+            </div>
             <div className='text-right'>
               {state.questionResult
                 ? 'ended'
@@ -86,6 +92,21 @@ export default function Client() {
               ))}
             </div>
             <div className='text-right'>{`waiting on ${state.undecidedRemaining} people`}</div>
+            <div className='flex flex-col bg-slate-50 rounded p-2 '>
+              <div className='text-center font-lg font-semibold'>
+                Elimination Log
+              </div>
+              <div className='flex-col-reverse overflow-y-scroll h-48 gap-2'>
+                {/* {state.eliminations.map(({time, username}, index) => {
+                  return (
+                    <div className='rounded m-2 p-2 bg-slate-100' key={index}>
+                      {`${time} ${username}`}
+                    </div>
+                  ) // aggregate instead of showing individual ones because theres no name moderation atm
+                })} */}
+                <EliminationAggregation eliminations={state.eliminations} />
+              </div>
+            </div>
           </div>
         ) : (
           <div> awaiting question </div>
