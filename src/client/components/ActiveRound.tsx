@@ -2,11 +2,7 @@ import { useContext } from 'react';
 import { Button } from '@mui/material';
 
 import EliminationAggregation from './EliminationAggregation';
-import {
-  AppStateContext,
-  SocketIoClientContext,
-  TimerContext,
-} from '../App';
+import { AppStateContext, SocketIoClientContext, TimerContext } from '../App';
 
 export default function ActiveRound() {
   const app = useContext(SocketIoClientContext);
