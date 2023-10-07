@@ -15,6 +15,7 @@ import {
 } from '../lib';
 import { type GameServerConfiguration } from '../server/GameServer';
 import { Sounds } from './Sounds';
+import { sleepUntil } from '../server/asyncUtils';
 
 export type ClientStatus =
   | 'spectator'
@@ -97,7 +98,10 @@ function App() {
           return { ...prevState, selectedChoice };
         });
       });
-      socket.on('new_question', (question: Question) => {
+      socket.on('new_question', async (question: Question) => {
+        // wait until the state is cleared up
+        await sleepUntil(() => !state.gameEnded);
+
         // console.log('nq', question);
         Sounds.get('notify')?.play();
 
