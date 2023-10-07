@@ -118,12 +118,14 @@ export class Room {
       // only one is the minimum
       worst_choice = choices[0][0];
     } else {
-      // use tiebreaker
-      let tiebreaker_choices = [...tiebreaker.entries()]
-        .filter(([_choice, count]) => count === choices[0][1])
-        .sort((a, b) => a[1] - b[1]);
-      if (tiebreaker_choices.length === 1) {
-        worst_choice = tiebreaker_choices[0][0];
+      if (choices.length >= 2) { // skip if no one did anything
+        // use tiebreaker
+        let tiebreaker_choices = [...tiebreaker.entries()]
+          .filter(([_choice, count]) => count === choices[0][1])
+          .sort((a, b) => a[1] - b[1]);
+        if (tiebreaker_choices.length === 1) {
+          worst_choice = tiebreaker_choices[0][0];
+        }
       }
     }
 
