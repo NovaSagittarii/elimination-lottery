@@ -224,7 +224,7 @@ function App() {
     let newStatus: ClientStatus = 'spectator';
     if (state.candidates.includes(state.username)) {
       newStatus = 'candidate';
-      if (state.candidates.length === 1) newStatus = 'champion';
+      if (state.candidates.length === 1 || state.gameEnded) newStatus = 'champion';
     } else if (
       state.eliminations.filter((x) => x.username === state.username).length
     )
@@ -237,7 +237,7 @@ function App() {
         totalParticipants: state.candidates.length + state.eliminations.length,
       };
     });
-  }, [state.candidates, state.eliminations]);
+  }, [state.candidates, state.eliminations, state.gameEnded]);
 
   return (
     <SocketIoClientContext.Provider value={app}>

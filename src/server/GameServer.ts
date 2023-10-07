@@ -107,8 +107,19 @@ class GameServer extends SioServer {
     // for (const [k, v] of room.getCandidateEntries()) {
     //   io.to(k).emit('name', v.getName());
     // }
+    
+    // end game in like 5 rounds if nothing happens (unlikely for large sizes, prevents collusion from going too far and resulting in stalling)
+    let abortCountdown = 5;
+    let prevCandidates = 0;
 
     while (!room.hasWinner()) {
+      let numCandidates = room.getCandidateNames().length;
+      if (numCandidates === prevCandidates) {
+        --abortCountdown;
+        if (abortCountdown <= 0) break;
+      } else abortCountdown = 5;
+      prevCandidates = numCandidates;
+
       room.startRound();
       io.emit('new_question', room.getQuestion());
       this.broadcastUndecided();

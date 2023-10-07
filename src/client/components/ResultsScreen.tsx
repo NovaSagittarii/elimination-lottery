@@ -10,10 +10,12 @@ export default function ResultsScreen() {
 
   const modifiedEliminations = [
     ...state.eliminations,
-    {
-      username: state.candidates[0],
-      time: -1,
-    } as EliminationRecord,
+    ...state.candidates.map(name => {
+      return {
+        username: name,
+        time: -1,
+      } as EliminationRecord;
+    }),
   ];
   return (
     <div className='flex flex-col gap-4'>
@@ -28,7 +30,7 @@ export default function ResultsScreen() {
         <div className='text-center font-lg font-semibold'>Leaderboard</div>
         <div className='flex-col-reverse overflow-y-scroll h-96 gap-2'>
           {modifiedEliminations
-            .slice(-10)
+            .slice(-25)
             .reverse()
             .map(({ time, username }, index) => {
               return (
