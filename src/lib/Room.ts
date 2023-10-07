@@ -113,28 +113,27 @@ export class Room {
 
     let worst_choice = -1;
     let choices = [...choice_count.entries()]
-      .filter(([_choice, count]) => count)
+      .filter(([_choice, count]) => count >= 1)
       .sort((a, b) => a[1] - b[1]);
-    choices = choices.filter((x) => x[1] === choices[0][1]);
-    console.log(choices);
+    let lowChoices = choices.filter((x) => x[1] === choices[0][1]);
+    // console.log([...choice_count.entries()]);
 
-    if (choices.length === 1) {
-      // this is if only one was picked
-      // worst_choice = choices[0][0]; // don't eliminate everyone
-    } else {
-      if (choices.length >= 2) {
-        // skip if no one did anything
+    if (choices.length >= 2) {
+      if (lowChoices.length === 1) {
+        // this is if only "min" was picked (and there is one larger)
+        worst_choice = choices[0][0];
+      } else {
         // use tiebreaker
-        let tiebreaker_choices = [...tiebreaker.entries()]
-          .filter(([_choice, count]) => count === choices[0][1])
+        let tiebreaker_choices = lowChoices
+          .map(([choice, _count]) => [choice, tiebreaker.get(choice) || 0])
           .sort((a, b) => a[1] - b[1]);
-        if (tiebreaker_choices.length === 1) {
+        if (tiebreaker_choices.length === 1 || tiebreaker_choices[0][1] < tiebreaker_choices[1][1]) {
           worst_choice = tiebreaker_choices[0][0];
         }
         console.log('tb', tiebreaker_choices);
       }
     }
-    console.log(choices, worst_choice);
+    // console.log(choices, worst_choice);
 
     for (const [key, user] of this.candidates.entries()) {
       // console.log(user.getName(), user.getChoice(), worst_choice);
