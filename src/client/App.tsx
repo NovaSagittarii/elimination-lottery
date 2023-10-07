@@ -16,7 +16,7 @@ import {
 import { type GameServerConfiguration } from '../server/GameServer';
 import { Sounds } from './Sounds';
 
-export type ClientStatus = 'spectator' | 'candidate' | 'eliminated';
+export type ClientStatus = 'spectator' | 'candidate' | 'eliminated' | 'champion';
 export type AppState = {
   round: number;
   username: string;
@@ -214,8 +214,10 @@ function App() {
   useEffect(() => {
     // update client status based on information from what they're doing
     let newStatus: ClientStatus = 'spectator';
-    if (state.candidates.includes(state.username)) newStatus = 'candidate';
-    else if (
+    if (state.candidates.includes(state.username)) {
+      newStatus = 'candidate';
+      if (state.candidates.length === 1) newStatus = 'champion';
+    } else if (
       state.eliminations.filter((x) => x.username === state.username).length
     )
       newStatus = 'eliminated';

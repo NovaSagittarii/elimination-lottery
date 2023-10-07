@@ -15,6 +15,7 @@ const STATUS_STYLING = new Map<ClientStatus, string>([
   ['spectator', 'bg-slate-400'],
   ['eliminated', 'bg-orange-300'],
   ['candidate', 'bg-green-300'],
+  ['champion', 'bg-gradient-to-r from-green-100 to-blue-400'],
 ]);
 
 export default function Client() {
