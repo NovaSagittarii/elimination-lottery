@@ -31,6 +31,7 @@ export type AppState = {
   undecidedRemaining: number;
   questionEndTime: number;
   questionDuration: number;
+  gameEnded: boolean;
 };
 export const InitialAppState: AppState = {
   round: 0,
@@ -46,6 +47,7 @@ export const InitialAppState: AppState = {
   undecidedRemaining: -1,
   questionEndTime: -1,
   questionDuration: -1,
+  gameEnded: false,
 };
 export const AppStateContext = createContext<AppState>(InitialAppState);
 
@@ -197,6 +199,9 @@ function App() {
       });
       socket.on('game_end', () => {
         console.log('game_end');
+        setState((prevState) => {
+          return { ...prevState, gameEnded: true };
+        });
       });
     }
   }, []);
